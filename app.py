@@ -6,8 +6,6 @@ from sqlalchemy import create_engine, func
 import numpy as np
 import pandas as pd
 
-
-
 # Preparing the data with automap to reflect 
 
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
@@ -43,18 +41,28 @@ def prcpt():
 
     # Creating the session
     session = Session(engine)
-    # # coverting Dates to datetime type
-    # import datetime as dt
-    # recent_mth = session.query(func.max(Measurement.date)).all()
-    # recent_mth
 
-    # Populating the dataflists with data from the past 12 months
+    # Populating the dictionary with data from the past 12 months
     p_date = {}
+    no = 0
     for row in session.query(Measurement).filter(Measurement.date >= '2016-08-23'):
-        p_date.update({row.date:row.prcp})
+        # no += 1 
+        # obs = 'Obs '+ str(no)
+        # print(obs)
+        p_date.update({row.date:{'Date':row.date, 'Precipitation':row.prcp}})
+    session.close()
 
     return jsonify(p_date)
+
+@app.route("/api/v1.0/stations")
+def station():
     
+    session = Session(engine)
+
+    st_group = session.query(Measurement.station)\
+                .group_by(Measurement.station).all()
+    return jsonify(st_group)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
